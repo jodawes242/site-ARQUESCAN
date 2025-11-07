@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App para Registro de Cerâmicas</title>
+<style>
+  body {
+    background-color: lightblue;
+    font-family: Arial, sans-serif;
+    padding: 10px;
+    margin: 0;
+  }
+
+  h1 {
+    color: purple;
+    text-align: center;
+    font-size: 1.8em;
+    margin-bottom: 15px;
+  }
+
+  form, .etiqueta {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 950px;
+    margin: 10px auto;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+  }
+
+  label {
+    display: block;
+    margin-top: 8px;
+    font-weight: bold;
+  }
+
+  input, textarea {
+    width: 100%;
+    padding: 7px;
+    margin-top: 4px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+    box-sizing: border-box;
+  }
+
+  .botoes {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  button {
+    padding: 10px 15px;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    flex: 1 1 45%;
+    min-width: 120px;
+  }
+
+  button[type="submit"] { background-color: #800080; }
+  button[type="button"] { background-color: #ff00ff; }
+  .btn-pdf { background-color: #000080; }
+  .btn-print { background-color: #0000ff; }
+  .btn-voltar { background-color: #555; }
+
+  /* --- TELA INICIAL --- */
+  #tela-inicial {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 90vh;
+    text-align: center;
+  }
+
+  #tela-inicial h1 {
+    font-size: 2em;
+    color: purple;
+    margin-bottom: 20px;
+  }
+
+  .versao-btn {
+    background-color: #800080;
+    color: white;
+    padding: 15px 25px;
+    margin: 10px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .versao-btn:hover {
+    background-color: #a020a0;
+    transform: scale(1.05);
+  }
+
+  /* --- ETIQUETA --- */
+  .etiqueta {
+    display: none;
+    border: 3px dashed #333;
+    font-size: 2.9em;
+    padding: 25px 45px;
+    width: 100%;
+    max-width: 260mm;
+    box-sizing: border-box;
+    margin: 20px auto;
+    text-align: left;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .etiqueta h1 {
+    text-align: center;
+    font-size: 3.2em;
+    color: purple;
+    margin-bottom: 15px;
+  }
+
+  @media (max-width: 768px) {
+    h1 { font-size: 1.6em; }
+    .etiqueta { font-size: 2.3em; max-width: 95%; padding: 20px; }
+    .etiqueta h1 { font-size: 2.6em; }
+    button { flex: 1 1 100%; }
+  }
+
+  @media print {
+    @page { size: 100mm 60mm; margin: 4mm; }
+    body * { visibility: hidden; }
+    .etiqueta, .etiqueta * { visibility: visible; }
+    .etiqueta {
+      position: absolute; top: 0; left: 0;
+      width: 100%; border: 2px dashed #000;
+      background: white; padding: 5mm 10mm;
+      font-size: 2.6em; box-sizing: border-box; margin: 0;
+    }
+  }
+</style>
+
+<!-- Bibliotecas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+</head>
+
+<body>
+
+<!-- 🔹 TELA INICIAL -->
+<div id="tela-inicial">
+  <h1>Escolha qual é sua função:</h1>
+  <button class="versao-btn" onclick="abrirVersao('registro')">🧾 Versão de Registro</button>
+  <button class="versao-btn" onclick="abrirVersao('consulta')">🔍 Versão de Consulta</button>
+</div>
+
+<!-- 🔹 CONTEÚDO PRINCIPAL -->
+<div id="conteudo-app" style="display:none;">
+  <button class="btn-voltar" onclick="voltarInicio()">⬅️ Voltar à tela inicial</button>
+
+  <h1>⚙️ Registro de Artefato Arqueológico 🧭</h1>
+
+  <form id="form-artefato">
+    <label for="nome">Projeto:</label>
+    <input type="text" id="nome" name="nome">
+
+    <label for="artefato">Coordenador de Campo:</label>
+    <input type="text" id="artefato" name="artefato">
+
+    <label for="materia">Empresa:</label>
+    <input type="text" id="materia" name="materia">
+
+    <label for="medidas">Medidas (cm):</label>
+    <input type="text" id="medidas" name="medidas">
+
+    <label for="nmp">N° MP:</label>
+    <input type="text" id="nmp" name="nmp">
+
+    <label for="sitio">Sítio:</label>
+    <input type="text" id="sitio" name="sitio">
+
+    <label for="quadrante">Quadrícula:</label>
+    <input type="text" id="quadrante" name="quadrante">
+
+    <label for="camada">Camada:</label>
+    <input type="text" id="camada" name="camada">
+
+    <label for="condicao">Conservação:</label>
+    <input type="text" id="condicao" name="condicao">
+
+    <label for="data">Data:</label>
+    <input type="date" id="data" name="data">
+
+    <label for="profissional">Responsável pela Empresa:</label>
+    <input type="text" id="profissional" name="profissional">
+
+    <label for="coordenada">Coordenada (escrita):</label>
+    <input type="text" id="coordenada" name="coordenada" placeholder="Ex: Norte 12345 / Leste 67890">
+
+    <label for="autor">Quem está fazendo:</label>
+    <input type="text" id="autor" name="autor">
+
+    <label for="observacoes">Observações:</label>
+    <textarea id="observacoes" name="observacoes" rows="3"></textarea>
+
+    <div class="botoes">
+      <button type="submit">Gerar Etiqueta</button>
+      <button type="button" onclick="limparFicha()">Limpar Ficha</button>
+    </div>
+  </form>
+
+  <div class="etiqueta" id="etiqueta">
+    <h1>📌 Etiqueta do Artefato</h1>
+    <div id="dadosEtiqueta"></div>
+    <div class="botoes">
+      <button class="btn-pdf" onclick="gerarPDF()">📄 PDF</button>
+      <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function abrirVersao(tipo) {
+  document.getElementById("tela-inicial").style.display = "none";
+  document.getElementById("conteudo-app").style.display = "block";
+
+  if (tipo === "consulta") {
+    alert("🔍 Versão de consulta ainda em desenvolvimento!");
+  }
+}
+
+function voltarInicio() {
+  document.getElementById("tela-inicial").style.display = "flex";
+  document.getElementById("conteudo-app").style.display = "none";
+  limparFicha();
+}
+
+document.getElementById('form-artefato').addEventListener('submit', function(e){
+  e.preventDefault();
+
+  const campos = [
+    "nome", "artefato", "materia", "medidas", "nmp",
+    "sitio", "quadrante", "camada", "condicao",
+    "data", "profissional", "coordenada", "autor", "observacoes"
+  ];
+
+  const div = document.getElementById("dadosEtiqueta");
+  div.innerHTML = "";
+
+  campos.forEach(id => {
+    const valor = document.getElementById(id).value || "";
+    const label = document.querySelector(`label[for="${id}"]`).innerText;
+    if (valor.trim() !== "") {
+      div.innerHTML += `<p><strong>${label}:</strong> ${valor}</p>`;
+    }
+  });
+
+  const etiqueta = document.getElementById("etiqueta");
+  etiqueta.style.display = "block";
+  etiqueta.scrollIntoView({ behavior: 'smooth' });
+});
+
+function limparFicha() {
+  document.getElementById('form-artefato').reset();
+  document.getElementById('etiqueta').style.display = 'none';
+}
+
+async function gerarPDF() {
+  const { jsPDF } = window.jspdf;
+  const etiqueta = document.getElementById("etiqueta");
+
+  const canvas = await html2canvas(etiqueta, { scale: 3, useCORS: true });
+  const imgData = canvas.toDataURL("image/png");
+
+  const pdf = new jsPDF("l", "mm", [100, 60]);
+  pdf.addImage(imgData, "PNG", 0, 0, 100, 60);
+  pdf.save("etiqueta_mini.pdf");
+}
+</script>
+
+</body>
+</html>
